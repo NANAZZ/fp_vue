@@ -1,7 +1,7 @@
 <template>
     <div class="app-goodslist">
         <!--1.顶部搜索框-->
-        <mt-search cancel-text="取消" placeholder="搜索"></mt-search>
+        <mt-search cancel-text="取消" placeholder="搜索" v-model="searchValue" @keyup.enter.native="getSearch"></mt-search>
         <div class="goodslist">
             <div class="goods-item" v-for="item in list" :key="item.lid">
                 <img :src="item.pic" @click="getDetail(item.lid)">
@@ -13,6 +13,7 @@
                 </div>     
             </div>
         </div>
+        <mt-button size="large" @click="getMore">加载更多</mt-button>
     </div>
 </template>
 <script>
@@ -20,21 +21,39 @@
         data(){
             return{
                 list:[],
+                pageIndex:0,   
+                pageSize:8,
                 serious:this.$route.query.serious,
+                searchValue:this.$route.query.content
             }
         },
         methods:{
-            getGoodsList(serious){
-                this.$http.get("goodslist?serious="+this.serious).then(result=>{
-                    this.list = result.body.data;
-                })                
-            },
             getDetail(lid){
                 this.$router.push("/home/goodsinfo/"+lid);
+            },
+            getMore(){
+                this.pageIndex++;
+                var url="goodslist";
+                url+="?serious="+this.serious+"&pno="+this.pageIndex+"&pageSize="+this.pageSize;
+                this.$http.get(url).then(result=>{
+                    var rows = this.list.concat(result.body.data);
+                    this.list = rows;
+                    this.pageCount = result.body.pageCount
+                })
+            },
+            getSearch(){
+                if(this.searchValue.trim()!=""){
+                    var url="search?content="+this.searchValue;
+                    this.$http.get(url).then(result=>{
+                        this.list = result.body;
+                    })
+                }
             }
         },
         created(){
-            this.getGoodsList();
+            this.getMore()
+            if(this.searchValue)
+            this.getSearch();
         }
     }
 </script>

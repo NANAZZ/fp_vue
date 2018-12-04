@@ -1,11 +1,11 @@
 <template>
     <div class="app-login">
-        <mt-navbar v-model="selected">
+        <mt-navbar v-model="active">
             <mt-tab-item id="1">登录</mt-tab-item>
             <mt-tab-item id="2">创建账户</mt-tab-item>
         </mt-navbar>
         <!-- tab-container -->
-        <mt-tab-container v-model="selected">
+        <mt-tab-container v-model="active">
             <mt-tab-container-item id="1">
                 <div class="login-container">
                     <div class="login-container-title">登录你的账户或创建一个Free&nbsp;People账户。</div>
@@ -35,6 +35,7 @@
     export default{
         data(){
             return{
+                active:"1",
                 emailval:"",
                 upwdval:"",
                 selected:true,
@@ -42,6 +43,7 @@
                 email:"",
                 upwd:"",
                 rupwd:"",
+                uid:""
             }
         },
         methods:{
@@ -51,13 +53,15 @@
                 this.$http.get("login?email="+e+"&upwd="+p).then(result=>{
                     if(result.body.code==1){
                         Toast(result.body.msg);
+                        sessionStorage.setItem("email",e);
                         this.$router.push("/");
-
+                        //history.go(-1);
+                        location.reload();
                     }else{
                         Toast(result.body.msg);
                     }
+                    sessionStorage.setItem("uid",result.body.uid);
                 })
-                sessionStorage.setItem("email",e);
             },
             btnCreateUser(){
                 var uname=this.uname;
@@ -75,12 +79,8 @@
                    Toast("用户密码不能为空!")
                    return;
                 }
-                //4.发送post请求
                 var url="register";
                 this.$http.post(url,{uname:uname,email:email,upwd:upwd}).then(result=>{
-                    //console.log(result);
-                    //5.获取服务器程序返回
-                    //6.提示用户“注册成功”
                     Toast("注册成功");
                     this.$router.push("/login");
                     this.uname="";this.email="";this.upwd="";this.rupwd="";

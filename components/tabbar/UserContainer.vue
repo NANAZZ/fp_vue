@@ -43,7 +43,7 @@
         </ul>
         <ul class="mui-table-view" style="margin-top: 25px;">
             <li class="mui-table-view-cell">
-                <a style="text-align: center;color: #FF3B30;">
+                <a style="text-align: center;color: #d52975;" @click="back">
                     退出登录
                 </a>
             </li>
@@ -55,6 +55,14 @@
         data(){
             return{
                 email:""
+            }
+        },
+        methods:{
+            back(){
+                sessionStorage.removeItem("email");
+                sessionStorage.removeItem("uid");
+                this.$router.push("/login");
+                location.reload();
             }
         },
         created() {

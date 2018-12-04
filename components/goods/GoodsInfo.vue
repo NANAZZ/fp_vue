@@ -44,7 +44,7 @@
             </div>
             <div>
                 <mt-button class="btn1" size="large">立即购买</mt-button>
-                <mt-button class="btn2" size="large" @click="addCartTo">添加至购物车</mt-button>
+                <mt-button class="btn2" size="large" @click="selectCartTo()">添加至购物车</mt-button>
             </div>
         </div>	
         <!--3商品参数区域-->
@@ -74,29 +74,41 @@ export default {
     data(){
         return {
             goodsimage:[],
-            info:{},
+            info:[{title:null,price:null}],
             goodsfix:[],
             val:1,
-            size:"S"            
+            size:"S",
+            arr1:"",
+            arr2:"",
+            arr3:"",
+            arr4:"",
+            arr5:"",
+            arr6:"",
+            lid:this.$route.params.lid,
+            cid:null,   
         } 
     },
     methods:{
         getGoodsImage(){
-            var lid = this.$route.params.lid;
-            this.$http.get("goodsimage?lid="+lid).then(result=>{
+            this.$http.get("goodsimage?lid="+this.lid).then(result=>{
                 this.goodsimage=result.body.data;
             })
         },
         getGoodsInfo(){
-            var lid = this.$route.params.lid;
-            this.$http.get("goodsinfo?lid="+lid).then(result=>{
+            this.$http.get("goodsinfo?lid="+this.lid).then(result=>{
                 this.info=result.body.data;
             })
         },
         getGoodsFix(){
-            var lid = this.$route.params.lid;
-            this.$http.get("goodsfix?lid="+lid).then(result=>{
+            this.$http.get("goodsfix?lid="+this.lid).then(result=>{
                 this.goodsfix=result.body.data;
+                //console.log(this.goodsfix)
+                //未实现滑动图片功能
+                // if(this.goodsfix.length<3){
+                //     return;
+                // }else{
+                    
+                // }
             })
         },
         add(){
@@ -107,11 +119,91 @@ export default {
             if(this.val!=1)
             this.val--;
         },
-        addCartTo(){
-            var lid = this.$route.params.lid;
+        selectCartTo(){
+            var uid = sessionStorage.getItem("uid");
+            var lid = this.lid;
             var count = this.val;
             var size = this.size;
-            this.$http.get("addCart?lid="+lid+"&count="+count+"&size="+size).then(result=>{
+            var title = this.info[0].title;
+            var price = this.info[0].price;
+            var pic = this.goodsimage[0].md;
+            if(!uid){
+                Toast("请先登录");
+                setTimeout(()=>{
+                    this.$router.push("/login");
+                },1500)
+            }else{
+                this.$http.get("selectCart?uid="+uid+"&lid="+lid+"&size="+size).then(result=>{
+                    //console.log(result.body);
+                    if(result.body.code==1){
+                        //console.log(result.body.cid)
+                        this.val = Number(result.body.count) + Number(count);
+                        this.cid = result.body.cid;
+                        this.addCountTo();
+                    }else{
+                        this.addCartTo();
+                    }
+                })
+            }
+            //我觉得可以不用存了
+            // //1.商品编号
+            // if(!sessionStorage.getItem("lid")){
+            //     this.arr6=lid;
+            // }else{
+            //     this.arr6=sessionStorage.getItem("lid")+","+lid;
+            // }
+            // sessionStorage.setItem("lid",this.arr6);
+            // //2.数量
+            // if(!sessionStorage.getItem("count")){
+            //     this.arr1=count;
+            // }else{
+            //     this.arr1=sessionStorage.getItem("count")+","+count;
+            // }
+            // sessionStorage.setItem("count",this.arr1);
+            // //3.尺码
+            // if(!sessionStorage.getItem("size")){
+            //     this.arr2=size;
+            // }else{
+            //     this.arr2=sessionStorage.getItem("size")+","+size;
+            // }
+            // sessionStorage.setItem("size",this.arr2);
+            // //4.标题
+            // if(!sessionStorage.getItem("title")){
+            //     this.arr3=title;
+            // }else{
+            //     this.arr3=sessionStorage.getItem("title")+","+title;
+            // }
+            // sessionStorage.setItem("title",this.arr3);
+            // //5.价格
+            // if(!sessionStorage.getItem("price")){
+            //     this.arr4=price;
+            // }else{
+            //     this.arr4=sessionStorage.getItem("price")+","+price
+            // }
+            // sessionStorage.setItem("price",this.arr4);
+            // //6.图片
+            // if(!sessionStorage.getItem("pic")){
+            //     this.arr5=pic;
+            // }else{
+            //     this.arr5=sessionStorage.getItem("pic")+","+pic;
+            // }
+            // sessionStorage.setItem("pic",this.arr5);
+        },
+        addCountTo(){
+            this.$http.get("addCount?cid="+this.cid+"&count="+this.val).then(result=>{
+                this.$store.commit("increment",this.val);
+                Toast(result.body.msg);
+            })
+        },
+        addCartTo(){
+            var uid = sessionStorage.getItem("uid");
+            var lid = this.lid;
+            var count = this.val;
+            var size = this.size;
+            var title = this.info[0].title;
+            var price = this.info[0].price;
+            var pic = this.goodsimage[0].md;
+            this.$http.get("addCart?lid="+lid+"&count="+count+"&size="+size+"&title="+title+"&price="+price+"&pic="+pic+"&uid="+uid).then(result=>{
                 if(result.body.code==1){
                     this.$store.commit("increment",count);
                     Toast(result.body.msg);
@@ -119,49 +211,6 @@ export default {
                     Toast(result.body.msg);
                 }
             })
-            //更新App.vue组件中购物车的数量
-            // localStorage.setItem("lid",lid);
-            // localStorage.setItem("count",count);
-            // localStorage.setItem("size",size);
-            // localStorage.setItem("title",this.info[0].title);
-            // localStorage.setItem("price",this.info[0].price);
-            // localStorage.setItem("pic",this.goodsimage[0]);
-
-            // function details(lid,count,size,title,price,pic){
-            //     this.lid=lid;
-            //     this.count=count;
-            //     this.size=size;
-            //     this.title=title;
-            //     this.price=price;
-            //     this.pic=pic;
-            // }
-            // var goods=new details(lid,count,size,this.info[0].title,this.info[0].price,this.goodsimage[0]);
-            // var objStr=JSON.stringify(goods);
-            // var s=window.localStorage;
-            // s.setItem("details",objStr);
-            
-            // appendLocal(key,obj){
-            //     if(obj==null) return;
-            //     let temp,tempStr='';
-            //     try{
-            //         if(localStorage.getItem(key)==null){
-            //             throw new Error('空或undefined')
-            //         }
-            //         temp=JSON.parse(localStorage.getItem(key));
-            //     }catch(err){
-            //         temp=[];
-            //     }
-            //     temp=temp.map((item)=>{
-            //         return JSON.stringify(item);
-            //     });
-            //     if(temp.indexOf(JSON.stringify(obj))===-1){
-            //         temp.push(JSON.stringify(obj));
-            //     }
-            //     temp.forEach((item,index,arr)=>{
-            //         arr.length===index+1 ? tempStr +=`${item}` : tempStr += `${item},`
-            //     });
-            //     localStorage.setItem(key,`[${tempStr}]`);
-            // }
         }
     },
     created() {

@@ -3,22 +3,23 @@
         <h4>购物车</h4>
         <!--商品列表-->
         <div class="mui-card">
-			<div class="mui-card-header">商品列表</div>
-			<div class="mui-card-content">
-				<div class="mui-card-content-inner">
+            <div class="mui-card-header">商品列表</div>
+            <div class="mui-card-content">
+                <div class="mui-card-content-inner">
                     <ul class="mui-table-view">
-                        <li class="mui-table-view-cell mui-media"  >
+                        <li class="mui-table-view-cell mui-media" v-for="(item,i) in shopCartList">
                             <a href="javascript:;">
-                                <img class="mui-media-object mui-pull-left" src="../../assets/cell1.jpg">
+                                <img class="mui-media-object mui-pull-left" :src="item.pic">
                                 <div class="mui-media-body">
-                                    <p class="title">{{title}}</p>
+                                    <p class="title">{{item.title}}</p>
+                                    <p class="size">尺码：{{item.size}}</p>
                                     <p class='mui-ellipsis'>
-                                        <span class="price">￥{{price}}</span>
+                                        <span class="price">￥{{item.price}}</span>
                                         <span class="count">
                                             <div class="mui-numbox" data-numbox-min='1' data-numbox-max='9'>
-                                                <button class="mui-btn mui-btn-numbox-minus" type="button" @click="minus(item.lid)">-</button>
-                                                <input id="test" class="mui-input-numbox" type="number" v-model="count"/>
-                                                <button class="mui-btn mui-btn-numbox-plus" type="button" @click="add(item.lid)">+</button>
+                                                <button class="mui-btn mui-btn-numbox-minus" type="button" @click="minus(i)">-</button>
+                                                <input id="test" class="mui-input-numbox" type="number" v-model="item.count"/>
+                                                <button class="mui-btn mui-btn-numbox-plus" type="button" @click="add(i)">+</button>
                                             </div>
                                         </span>
                                     </p>
@@ -26,50 +27,69 @@
                             </a>
                         </li>
                     </ul>
-				</div>
-			</div>
-			<div class="mui-card-footer"><span>合计：</span><span>￥{{getSubTotal}}</span></div>
-		</div>
+                </div>
+            </div>
+            <div class="mui-card-footer"><span>合计：</span><span>￥{{getSubTotal}}</span></div>
+        </div>
     </div>
 </template>
 <script>
+    import {Toast} from 'mint-ui';
     export default{
         data(){
             return{
+                email:"",
+                uid:"",
                 shopCartList:[],
-                val:1,
-                count:"",
-                title:"",
-                price:"",
-                pic:""
+                count:""
+                // count:localStorage.getItem("count").split(","),
+                // size:localStorage.getItem("size").split(","),
+                // title:localStorage.getItem("title").split(","),
+                // price:localStorage.getItem("price").split(","),
+                // pic:localStorage.getItem("pic").split(","),
+                // lid:localStorage.getItem("lid").split(",")
             }
         },
         methods:{
-            add(id){
-                for(var item of this.shopCartList){
-                    if(item.lid==lid){
-                        item.count++;
-                        break;
-                    }
-                }
+            add(i){
+                var a=document.getElementsByClassName("mui-input-numbox")[i]
+                a.value++;
             },
-            minus(lid){
-                for(var item of this.shopCartList){
-                    if(item.lid==lid){
-                        if(item.count<2)return;
-                        item.count--;
-                        break;
+            minus(i){
+                var a=document.getElementsByClassName("mui-input-numbox")[i]
+                a.value--;
+            },
+            getShopCart(){
+                this.$http.get("getshopcart?uid="+this.uid).then(result=>{
+                    this.shopCartList=result.body;
+                    var oo="" 
+                    for(var item of this.shopCartList){
+                        var tt=Number(item.count)
+                        console.log(tt)
+                        var yy=oo+tt
+                        eval({yy})
+                        //console.log(countTotal);
+                        //var countTotal=this.count;
+                        //console.log(countTotal);
+                        //Number(countTotal) += 
+                        //console.log(this.count);
                     }
-                }
-            }
+                     console.log(oo)
+                    this.$store.commit("increment",this.count);
+                })
+            },
         },
         created(){
-            this.lid = localStorage.getItem("lid");
-            this.count = localStorage.getItem("count");
-            this.size = localStorage.getItem("size");
-            this.title = localStorage.getItem("title");
-            this.price = localStorage.getItem("price");
-            this.pic = localStorage.setItem("pic");
+            this.email = sessionStorage.getItem("email");
+            this.uid = sessionStorage.getItem("uid");
+            if(!this.email) {
+                Toast("请先登录，再使用购物车");
+                setTimeout(()=>{
+                    this.$router.push("/login");
+                },2000)
+            }else{
+                this.getShopCart();
+            }
         },
         computed:{
             getSubTotal:function(){
@@ -113,15 +133,15 @@
     .app-shop .mui-card .mui-card-content .mui-card-content-inner ul li a div.mui-media-body{
         margin:0;
     }
-    .app-shop .mui-card .mui-card-content .mui-card-content-inner ul li a div.mui-media-body p.title{
-        margin-top:5px;
+    .app-shop .mui-card .mui-card-content .mui-card-content-inner ul li a div.mui-media-body p.title,.size{
+        margin-top:10px;
         font-size:12px;
         color:#262626;
     }
     .app-shop .mui-card .mui-card-content .mui-card-content-inner ul li a div.mui-media-body p.mui-ellipsis{
         display:flex;
         justify-content:space-between;
-        margin-top:15px;
+        margin-top:10px;
         font-size:12px;
         color:#262626;
     }
@@ -140,4 +160,11 @@
     .app-shop .mui-card .mui-card-footer{
         color:#262626;
     }
+    /*未登录样式
+    .unlogin{
+        padding:20px;
+    }
+    .unlogin-login{
+        display:block;
+    }*/
 </style>
