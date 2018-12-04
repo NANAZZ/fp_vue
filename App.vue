@@ -6,26 +6,26 @@
         <router-view></router-view>
         <!--3.底部导航栏-->
         <nav class="mui-bar mui-bar-tab">
-			<router-link class="mui-tab-item mui-active" to="/home">
-				<span class="mui-icon mui-icon-home"></span>
+			<router-link class="mui-tab-item" :class="click==1?'mui-active':''" to="/home" >
+				<span class="mui-icon mui-icon-home" @click="clickChangeColor(1)"></span>
 				<span class="mui-tab-label">主页</span>
 			</router-link>
-			<router-link class="mui-tab-item" to="/search">
-				<span class="mui-icon mui-icon-search"></span>
+			<router-link class="mui-tab-item" :class="click==2?'mui-active':''" to="/search">
+				<span class="mui-icon mui-icon-search" @click="clickChangeColor(2)"></span>
 				<span class="mui-tab-label">搜索</span>
 			</router-link>
-			<router-link class="mui-tab-item" to="/shop">
-				<span class="mui-icon mui-icon-extra mui-icon-extra-cart">
+			<router-link class="mui-tab-item" :class="click==3?'mui-active':''" to="/shop">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-cart" @click="clickChangeColor(3)">
                     <span class="mui-badge">{{$store.getters.optCount}}</span>
                 </span>
 				<span class="mui-tab-label">购物车</span>
 			</router-link>
-			<router-link class="mui-tab-item" v-if="email" to="/user">
-				<span class="mui-icon mui-icon-contact"></span>
+			<router-link class="mui-tab-item" :class="click==4?'mui-active':''" v-if="email" to="/user">
+				<span class="mui-icon mui-icon-contact" @click="clickChangeColor(4)"></span>
 				<span class="mui-tab-label">用户</span>
 			</router-link>
-            <router-link class="mui-tab-item" v-else to="/login">
-				<span class="mui-icon mui-icon-contact"></span>
+            <router-link class="mui-tab-item" :class="click==4?'mui-active':''" v-else to="/login">
+				<span class="mui-icon mui-icon-contact" @click="clickChangeColor(4)"></span>
 				<span class="mui-tab-label">用户</span>
 			</router-link>
 		</nav>
@@ -35,7 +35,13 @@
     export default{
         data(){
             return{
-                email:""
+                email:"",
+                click:1
+            }
+        },
+        methods:{
+            clickChangeColor(i){
+                this.click=i
             }
         },
         created() {
